@@ -1,0 +1,25 @@
+# Python compiled files
+*.pyc
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+
+# Python virtual environment
+venv/
+env/
+.env/
+
+# IDE settings (optional but recommended)
+.vscode/
+.idea/
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+*.ini
