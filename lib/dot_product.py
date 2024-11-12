@@ -111,8 +111,12 @@ class ScaleDatabase:
 
 
     def augment_positive_rescale_0_1_timesteps(self, positive_value: float, timesteps: int, dbVectors: np.ndarray) -> np.ndarray:
-        int_vec = self.mean_center_normalize(dbVectors) + math.sqrt(positive_value)
-        return int_vec/np.max(int_vec) * timesteps
+        # int_vec = self.mean_center_normalize(dbVectors) + (positive_value)
+        # return int_vec/np.max(int_vec) * 10
+        mean_center_norm_positive = self.mean_center_normalize(dbVectors) + positive_value
+        rslt = self.normalizer.fit_transform(mean_center_norm_positive) 
+        # assert np.all(rslt >= 0), "Result contains negative values"
+        return rslt * timesteps
 
 class ScaleQuery:
     def __init__(self, mu1):
@@ -139,8 +143,12 @@ class ScaleQuery:
         return rslt
     
     def augment_positive_rescale_0_1_timesteps(self, positive_value: float, timesteps: int, queryVector: np.ndarray) -> np.ndarray:
-        int_vec = self.mean_center_normalize(queryVector + positive_value)
-        return int_vec/np.max(int_vec) * timesteps
+        # int_vec = self.mean_center_normalize(queryVector) + positive_value
+        # return int_vec/np.max(int_vec) * timesteps
+        mean_center_norm_positive = self.mean_center_normalize(queryVector) + positive_value
+        rslt = self.normalizer.fit_transform(mean_center_norm_positive)
+        # assert np.all(rslt >= 0), "Result contains negative values"
+        return rslt*timesteps
 
 class DotProduct:
 
