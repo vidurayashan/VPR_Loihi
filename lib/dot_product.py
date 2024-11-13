@@ -81,6 +81,17 @@ from lava.proc import io
 from type_neuron import INF as infinity
 from snn import TwoLayerSNN, SNN
 
+debug = True
+def debug_print(args, str_lst=[]):
+    global debug
+    if debug:
+        for arg in args:
+            if str_lst != []:
+                print(f'{str_lst[0]} :\n{arg}')
+                str_lst.pop(0)
+            else:
+                print(arg)
+
 class ScaleDatabase:
 
     def __init__(self):
@@ -115,7 +126,7 @@ class ScaleDatabase:
         # return int_vec/np.max(int_vec) * 10
         mean_center_norm_positive = self.mean_center_normalize(dbVectors) + positive_value
         rslt = self.normalizer.fit_transform(mean_center_norm_positive) 
-        # assert np.all(rslt >= 0), "Result contains negative values"
+        assert np.all(rslt >= 0), "Result contains negative values"
         return rslt * timesteps
 
 class ScaleQuery:
@@ -147,7 +158,7 @@ class ScaleQuery:
         # return int_vec/np.max(int_vec) * timesteps
         mean_center_norm_positive = self.mean_center_normalize(queryVector) + positive_value
         rslt = self.normalizer.fit_transform(mean_center_norm_positive)
-        # assert np.all(rslt >= 0), "Result contains negative values"
+        assert np.all(rslt >= 0), "Result contains negative values"
         return rslt*timesteps
 
 class DotProduct:
@@ -166,7 +177,7 @@ class CPUDotProduct(DotProduct):
     def run(self):
         scaled_dbVectors = self.scale_db.mean_center_normalize(self.dbVectors)
         scaled_queryVectors = self.scale_query.mean_center_normalize(self.queryVectors) 
-        
+        debug_print([scaled_dbVectors, scaled_queryVectors], ['scaled_dbVectors', 'scaled_queryVectors'])
         return cdist(scaled_queryVectors, scaled_dbVectors, 'cosine')
     
 class CPUDotProductPositive(DotProduct):
@@ -178,7 +189,7 @@ class CPUDotProductPositive(DotProduct):
     def run(self):
         transform_dbVectors    = self.scale_db.augment_positive(self.positive_value, self.dbVectors)
         transform_queryVectors = self.scale_query.augment_positive(self.positive_value, self.queryVectors)
-
+        debug_print([transform_dbVectors, transform_queryVectors], ['transform_dbVectors', 'transform_queryVectors'])
         return cdist(transform_queryVectors, transform_dbVectors, 'cosine')
     
 class CPUDotProductPositiveMIN(DotProduct):
@@ -191,7 +202,7 @@ class CPUDotProductPositiveMIN(DotProduct):
     def run(self):
         transform_dbVectors    = self.scale_db.augment_positive(self.positive_value, self.dbVectors)
         transform_queryVectors = self.scale_query.augment_positive(self.positive_value, self.queryVectors)
-
+        debug_print([transform_dbVectors, transform_queryVectors], ['transform_dbVectors', 'transform_queryVectors'])
         return cdist(transform_queryVectors, transform_dbVectors, 'cosine')
 
 class LoihiDotProduct(DotProduct):
@@ -216,7 +227,7 @@ class LoihiDotProductSimulationPositive(LoihiDotProduct):
 
         transform_dbVectors = self.scale_db.augment_positive_rescale_0_1_timesteps(self.positive_value, self.timesteps, self.dbVectors)
         transform_queryVectors = self.scale_query.augment_positive_rescale_0_1_timesteps(self.positive_value, self.timesteps, self.queryVectors)
-        
+        debug_print([transform_dbVectors, transform_queryVectors], ['transform_dbVectors', 'transform_queryVectors'])
         queryVector = transform_queryVectors[0]
         # print(queryVector[:10])
         lif_1, dense, lif_2 = self.network.create_network(self.timesteps, queryVector, transform_dbVectors)
@@ -226,6 +237,7 @@ class LoihiDotProductSimulationPositive(LoihiDotProduct):
         for i, queryVector in enumerate(tqdm(transform_queryVectors)):
             
             init_v = [ -(self.timesteps  - elem - 1) for elem in queryVector]
+            debug_print([init_v], ['init_v'])
             # print(init_v[:5])
             self.network.update_network(queryVector)
             # print(lif_1.v.get()[:5])
