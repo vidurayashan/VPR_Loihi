@@ -103,7 +103,6 @@ class ScaleDatabase:
     def mean_center_normalize(self, dbVectors: np.ndarray) -> np.ndarray:
 
         mu1 = np.mean(dbVectors,axis=0)
-
         dbVectors_centered = np.subtract(dbVectors,mu1)
 
         dbVectors_norm = self.normalizer.fit_transform(dbVectors_centered)
@@ -128,6 +127,14 @@ class ScaleDatabase:
         rslt = self.normalizer.fit_transform(mean_center_norm_positive) 
         assert np.all(rslt >= 0), "Result contains negative values"
         return rslt * timesteps
+    
+    def augment_positive_based_on_q0(self, positive_value: float, timesteps: int, queryVector: np.ndarray) -> np.ndarray:
+        mean_center_norm_positive = self.mean_center_normalize(queryVector) + positive_value
+        rslt = self.normalizer.fit_transform(mean_center_norm_positive)
+        assert np.all(rslt >= 0), "Result contains negative values"
+        max_q = np.max(rslt)
+        min_q = np.min(rslt)
+        return (max_q - rslt) * timesteps / (max_q - min_q)
 
 class ScaleQuery:
     def __init__(self, mu1):
@@ -159,7 +166,23 @@ class ScaleQuery:
         mean_center_norm_positive = self.mean_center_normalize(queryVector) + positive_value
         rslt = self.normalizer.fit_transform(mean_center_norm_positive)
         assert np.all(rslt >= 0), "Result contains negative values"
+        debug_print([rslt], ['rslt'])
+        debug_print([rslt*timesteps], ['rslt*timesteps'])
         return rslt*timesteps
+    
+    def augment_positive_based_on_q0(self, positive_value: float, timesteps: int, queryVector: np.ndarray) -> np.ndarray:
+        # int_vec = self.mean_center_normalize(queryVector) + positive_value
+        # return int_vec/np.max(int_vec) * timesteps
+        debug_print([queryVector], ['queryVector'])
+        mean_center_norm_positive = self.mean_center_normalize(queryVector) + positive_value
+        debug_print([mean_center_norm_positive], ['mean_center_norm_positive'])
+        rslt = self.normalizer.fit_transform(mean_center_norm_positive)
+        assert np.all(rslt >= 0), "Result contains negative values"
+        debug_print([rslt], ['rslt'])
+        max_q0 = np.max(rslt[0])
+        min_q0 = np.min(rslt[0])
+        debug_print([max_q0, min_q0], ['max_q0', 'min_q0'])
+        return (max_q0 - rslt) * timesteps / (max_q0 - min_q0)
 
 class DotProduct:
 
@@ -191,6 +214,7 @@ class CPUDotProductPositive(DotProduct):
         transform_queryVectors = self.scale_query.augment_positive(self.positive_value, self.queryVectors)
         debug_print([transform_dbVectors, transform_queryVectors], ['transform_dbVectors', 'transform_queryVectors'])
         return cdist(transform_queryVectors, transform_dbVectors, 'cosine')
+    
     
 class CPUDotProductPositiveMIN(DotProduct):
 
@@ -225,8 +249,8 @@ class LoihiDotProductSimulationPositive(LoihiDotProduct):
 
         results = []
 
-        transform_dbVectors = self.scale_db.augment_positive_rescale_0_1_timesteps(self.positive_value, self.timesteps, self.dbVectors)
-        transform_queryVectors = self.scale_query.augment_positive_rescale_0_1_timesteps(self.positive_value, self.timesteps, self.queryVectors)
+        transform_dbVectors = self.scale_db.augment_positive_based_on_q0(self.positive_value, self.timesteps, self.dbVectors)
+        transform_queryVectors = self.scale_query.augment_positive_based_on_q0(self.positive_value, self.timesteps, self.queryVectors)
         debug_print([transform_dbVectors, transform_queryVectors], ['transform_dbVectors', 'transform_queryVectors'])
         queryVector = transform_queryVectors[0]
         # print(queryVector[:10])
@@ -237,7 +261,7 @@ class LoihiDotProductSimulationPositive(LoihiDotProduct):
         for i, queryVector in enumerate(tqdm(transform_queryVectors)):
             
             init_v = [ -(self.timesteps  - elem - 1) for elem in queryVector]
-            debug_print([init_v], ['init_v'])
+            # debug_print([init_v], ['init_v'])
             # print(init_v[:5])
             self.network.update_network(queryVector)
             # print(lif_1.v.get()[:5])
@@ -248,13 +272,13 @@ class LoihiDotProductSimulationPositive(LoihiDotProduct):
 
             # print(lif_2.u.get()[:10])
 
-            cosine_dist = 1 - aproxDotProduct
+            # cosine_dist = 1 - aproxDotProduct
         
-            results.append(cosine_dist)
+            results.append(aproxDotProduct)
         
         lif_2.stop()
         
-        return np.array(results)
+        return np.array(results), transform_queryVectors, transform_dbVectors
  
 
 class LoihiDotProductHardware(LoihiDotProduct):
