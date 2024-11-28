@@ -136,4 +136,54 @@ class TwoLayerSNN(SNN):
         TwoLayerSNN.lif_2.u.set(np.zeros(self.n_vec).astype(int))
         TwoLayerSNN.lif_2.v.set(np.zeros(self.n_vec).astype(int))
 
-    
+class ThreeLayerSNN(SNN):
+
+    lif_1 = None
+    dense = None
+    lif_2 = None
+    lif_3 = None
+
+    def __init__(self):
+        super().__init__()
+
+    def create_network(self, timesteps, scaled_queryVector, scaled_dbVectors):
+
+        if scaled_queryVector.shape[0] != scaled_dbVectors.shape[1]:
+            assert("Dims do not match!")
+
+        ## Initialize parameters in the Network
+        self.timesteps = timesteps
+        self.n_vec = scaled_dbVectors.shape[0]
+        self.dims  = scaled_dbVectors.shape[1]
+
+        
+        ## Initialize LIF neuron parameters
+        init_v = [ -(self.timesteps - elem - 1) for elem in scaled_queryVector]
+        weights = np.array(scaled_dbVectors).reshape(self.n_vec,self.dims).astype(float)
+
+        ## Initialize LIF neurons
+        ThreeLayerSNN.lif_1   = LIF(shape=(self.dims,), bias_mant=1, vth=0, v=np.round(init_v).astype(int))
+        ThreeLayerSNN.dense   = Dense(weights=np.round(weights).astype(int))
+        v_th_layer_2 = (2**24) / 2 / (2**6) - 1
+        v_th_layer_2 = 2**17 - 1
+        ThreeLayerSNN.lif_2   = LIF(shape=(self.n_vec,), vth=v_th_layer_2, bias_mant=0, du=0)
+        ThreeLayerSNN.lif_3   = LIF(shape=(self.n_vec,), vth=infinity, bias_mant=0, du=0)
+        ## Connect LIF neurons
+        ThreeLayerSNN.lif_1.s_out.connect(ThreeLayerSNN.dense.s_in)
+        ThreeLayerSNN.dense.a_out.connect(ThreeLayerSNN.lif_2.a_in)
+        ThreeLayerSNN.lif_2.s_out.connect(ThreeLayerSNN.lif_3.a_in)
+
+
+        return ThreeLayerSNN.lif_1, ThreeLayerSNN.dense, ThreeLayerSNN.lif_2, ThreeLayerSNN.lif_3
+        
+    def update_network(self, scaled_queryVector):
+
+        init_v = [ -(self.timesteps  - elem - 1) for elem in scaled_queryVector]
+        ThreeLayerSNN.lif_1.u.set(np.zeros(self.dims).astype(int))
+        ThreeLayerSNN.lif_1.v.set(np.round(init_v).astype(int))
+
+        ThreeLayerSNN.lif_2.u.set(np.zeros(self.n_vec).astype(int))
+        ThreeLayerSNN.lif_2.v.set(np.zeros(self.n_vec).astype(int))
+
+        ThreeLayerSNN.lif_3.u.set(np.zeros(self.n_vec).astype(int))
+        ThreeLayerSNN.lif_3.v.set(np.zeros(self.n_vec).astype(int))

@@ -79,7 +79,7 @@ from lava.magma.core.run_conditions import RunSteps
 from lava.proc import io
 
 from type_neuron import INF as infinity
-from snn import TwoLayerSNN, SNN
+from snn import TwoLayerSNN, ThreeLayerSNN
 
 debug = True
 def debug_print(args, str_lst=[]):
@@ -135,7 +135,7 @@ class ScaleDatabase:
         max_q = np.max(rslt)
         min_q = np.min(rslt)
         return (max_q - rslt) * timesteps / (max_q - min_q)
-
+    
 class ScaleQuery:
     def __init__(self, mu1):
         self.mu1 = mu1
@@ -279,7 +279,101 @@ class LoihiDotProductSimulationPositive(LoihiDotProduct):
         lif_2.stop()
         
         return np.array(results), transform_queryVectors, transform_dbVectors
+    
+class LoihiDotProductSimulationPositiveDBScale(LoihiDotProduct):
+
+    def __init__(self, dbVectors, queryVectors, positive_value: float, timesteps=50, dbScale=50, INF=infinity):
+        super().__init__(dbVectors, queryVectors)
+        self.run_config = Loihi1SimCfg(select_tag='fixed_pt')
+        # self.run_config = Loihi1SimCfg(select_tag='floating_pt')
+        self.timesteps = timesteps
+        self.dbScale = dbScale
+        self.INF = infinity
+        self.network = TwoLayerSNN()
+        self.positive_value = positive_value
+
+    def run(self):
+
+        results = []
+
+        transform_dbVectors = self.scale_db.augment_positive_based_on_q0(self.positive_value, self.dbScale, self.dbVectors)
+        transform_queryVectors = self.scale_query.augment_positive_based_on_q0(self.positive_value, self.timesteps, self.queryVectors)
+        debug_print([transform_dbVectors, transform_queryVectors], ['transform_dbVectors', 'transform_queryVectors'])
+        queryVector = transform_queryVectors[0]
+        # print(queryVector[:10])
+        lif_1, dense, lif_2 = self.network.create_network(self.timesteps, queryVector, transform_dbVectors)
+        
+        lif_2.run(condition=RunSteps(num_steps=self.timesteps), run_cfg=self.run_config)
+
+        for i, queryVector in enumerate(tqdm(transform_queryVectors)):
+            
+            init_v = [ -(self.timesteps  - elem - 1) for elem in queryVector]
+            # debug_print([init_v], ['init_v'])
+            # print(init_v[:5])
+            self.network.update_network(queryVector)
+            # print(lif_1.v.get()[:5])
+
+            lif_2.run(condition=RunSteps(num_steps=self.timesteps), run_cfg=self.run_config)
+            
+            aproxDotProduct = lif_2.u.get()/( 2**6 )
+
+            # print(lif_2.u.get()[:10])
+
+            # cosine_dist = 1 - aproxDotProduct
+        
+            results.append(aproxDotProduct)
+        
+        lif_2.stop()
+        
+        return np.array(results), transform_queryVectors, transform_dbVectors
  
+class LoihiDotProductSimulationPositive3Layer(LoihiDotProduct):
+
+    def __init__(self, dbVectors, queryVectors, positive_value: float, timesteps=50, INF=infinity):
+        super().__init__(dbVectors, queryVectors)
+        self.run_config = Loihi1SimCfg(select_tag='fixed_pt')
+        # self.run_config = Loihi1SimCfg(select_tag='floating_pt')
+        self.timesteps = timesteps
+        self.INF = infinity
+        self.network = ThreeLayerSNN()
+        self.positive_value = positive_value
+
+    def run(self):
+
+        results = []
+
+        transform_dbVectors = self.scale_db.augment_positive_based_on_q0(self.positive_value, self.timesteps, self.dbVectors)
+        transform_queryVectors = self.scale_query.augment_positive_based_on_q0(self.positive_value, self.timesteps, self.queryVectors)
+        debug_print([transform_dbVectors, transform_queryVectors], ['transform_dbVectors', 'transform_queryVectors'])
+        queryVector = transform_queryVectors[0]
+        # print(queryVector[:10])
+        lif_1, dense, lif_2, lif_3 = self.network.create_network(self.timesteps, queryVector, transform_dbVectors)
+        
+        lif_3.run(condition=RunSteps(num_steps=self.timesteps), run_cfg=self.run_config)
+
+        for i, queryVector in enumerate(tqdm(transform_queryVectors)):
+            
+            init_v = [ -(self.timesteps  - elem - 1) for elem in queryVector]
+            # debug_print([init_v], ['init_v'])
+            # print(init_v[:5])
+            self.network.update_network(queryVector)
+            # print(lif_1.v.get()[:5])
+
+            lif_3.run(condition=RunSteps(num_steps=self.timesteps), run_cfg=self.run_config)
+            
+            aproxDotProduct_v = lif_2.v.get()/( 2**6 )
+            aproxDotProduct_u = lif_2.u.get()/( 2**6 )
+            overflow_count  = lif_3.u.get()/( 2**6 )
+
+            # print(lif_2.u.get()[:10])
+
+            # cosine_dist = 1 - aproxDotProduct
+        
+            results.append([aproxDotProduct_v, aproxDotProduct_u, overflow_count])
+        
+        lif_3.stop()
+        
+        return np.array(results), transform_queryVectors, transform_dbVectors
 
 class LoihiDotProductHardware(LoihiDotProduct):
 
