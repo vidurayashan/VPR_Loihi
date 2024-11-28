@@ -377,12 +377,14 @@ class LoihiDotProductSimulationPositive3Layer(LoihiDotProduct):
 
 class LoihiDotProductHardware(LoihiDotProduct):
 
-    def __init__(self, dbVectors, queryVector):
+    def __init__(self, dbVectors, queryVectors, positive_value: float, timesteps=50, INF=infinity, hw_profiler=False):
         # Loihi2.preferred_partition = 'oheogulch'
         Loihi2.preferred_partition = 'oheogulch_2h'
         # Loihi2.preferred_partition = 'oheogulch_20m'
         loihi2_is_available = Loihi2.is_loihi2_available
-
+        self.hw_profiler = hw_profiler
+        self.profiler = None
+        
         if loihi2_is_available:
             from lava.utils import loihi2_profiler
             print(f'Running on {Loihi2.partition}')
@@ -391,6 +393,53 @@ class LoihiDotProductHardware(LoihiDotProduct):
             RuntimeError("Loihi2 compiler is not available in this system. "
             "This tutorial cannot proceed further.")
 
-        super().__init__(dbVectors, queryVector)
+        super().__init__(dbVectors, queryVectors)
         self.run_config = Loihi2HwCfg()
+        self.timesteps = timesteps
+
+        if self.hw_profiler:
+            self.profiler = Profiler.init(self.run_config)
+
+            self.profiler.execution_time_probe(num_steps=self.timesteps, buffer_size=2048, dt=1)
+            self.profiler.energy_probe(num_steps=self.timesteps)
+            self.profiler.memory_probe()
+        
+        self.INF = infinity
+        self.network = TwoLayerSNN()
+        self.positive_value = positive_value
+
+    def run(self):
+
+        results = []
+
+        transform_dbVectors = self.scale_db.augment_positive_based_on_q0(self.positive_value, self.timesteps, self.dbVectors)
+        transform_queryVectors = self.scale_query.augment_positive_based_on_q0(self.positive_value, self.timesteps, self.queryVectors)
+        debug_print([transform_dbVectors, transform_queryVectors], ['transform_dbVectors', 'transform_queryVectors'])
+        queryVector = transform_queryVectors[0]
+        # print(queryVector[:10])
+        lif_1, dense, lif_2 = self.network.create_network(self.timesteps, queryVector, transform_dbVectors)
+        
+        lif_2.run(condition=RunSteps(num_steps=self.timesteps), run_cfg=self.run_config)
+
+        for i, queryVector in enumerate(tqdm(transform_queryVectors)):
+            
+            init_v = [ -(self.timesteps  - elem - 1) for elem in queryVector]
+            # debug_print([init_v], ['init_v'])
+            # print(init_v[:5])
+            self.network.update_network(queryVector)
+            # print(lif_1.v.get()[:5])
+
+            lif_2.run(condition=RunSteps(num_steps=self.timesteps), run_cfg=self.run_config)
+            
+            aproxDotProduct = lif_2.u.get()/( 2**6 )
+
+            # print(lif_2.u.get()[:10])
+
+            # cosine_dist = 1 - aproxDotProduct
+        
+            results.append(aproxDotProduct)
+        
+        lif_2.stop()
+        
+        return np.array(results)
   
