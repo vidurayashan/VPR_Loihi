@@ -79,7 +79,7 @@ from lava.magma.core.run_conditions import RunSteps
 from lava.proc import io
 
 from type_neuron import INF as infinity
-from snn import TwoLayerSNN, ThreeLayerSNN#, ThreeLayerSNNRateEncoded
+from snn import TwoLayerSNN, ThreeLayerSNN, TwoLayerSNNwithAddition
 
 debug = False
 def debug_print(args, str_lst=[]):
@@ -131,10 +131,13 @@ class ScaleDatabase:
     def augment_positive_based_on_q0(self, positive_value: float, timesteps: int, queryVector: np.ndarray) -> np.ndarray:
         mean_center_norm_positive = self.mean_center_normalize(queryVector) + positive_value
         rslt = self.normalizer.fit_transform(mean_center_norm_positive)
-        assert np.all(rslt >= 0), "Result contains negative values"
+        # assert np.all(rslt >= 0), "Result contains negative values"
         max_q = np.max(rslt)
         min_q = np.min(rslt)
-        return (max_q - rslt) * timesteps / (max_q - min_q)
+        # return (max_q - rslt) * timesteps / (max_q - min_q)
+        ans = (rslt - min_q) * timesteps / (max_q - min_q)
+        assert np.all(ans >= 0), "Result contains negative values"
+        return ans
     
 class ScaleQuery:
     def __init__(self, mu1):
@@ -175,17 +178,19 @@ class ScaleQuery:
         # int_vec = self.mean_center_normalize(queryVector) + positive_value
         # return int_vec/np.max(int_vec) * timesteps
         debug_print([queryVector], ['queryVector'])
-        debug_print([queryVector], ['queryVector'])
         debug_print([positive_value], ['positive_value'])
         mean_center_norm_positive = self.mean_center_normalize(queryVector) + positive_value
         debug_print([mean_center_norm_positive], ['mean_center_norm_positive'])
         rslt = self.normalizer.fit_transform(mean_center_norm_positive)
-        assert np.all(rslt >= 0), "Result contains negative values"
+        # assert np.all(rslt >= 0), "Result contains negative values"
         debug_print([rslt], ['rslt'])
         max_q0 = np.max(rslt[0])
         min_q0 = np.min(rslt[0])
         debug_print([max_q0, min_q0], ['max_q0', 'min_q0'])
-        return (max_q0 - rslt) * timesteps / (max_q0 - min_q0)
+        ans = (rslt - min_q0) * timesteps / (max_q0 - min_q0)
+        # assert np.all(ans >= 0), "Result contains negative values"
+        debug_print([ans], ['ans'])
+        return ans
 
 class DotProduct:
 
@@ -205,32 +210,39 @@ class CPUDotProduct(DotProduct):
 
     def __init__(self, dbVectors, queryVectors):
         super().__init__(dbVectors, queryVectors)
+        self.scaled_dbVectors = None
+        self.scaled_queryVectors = None
 
-    def run(self, dbVectors=None, queryVectors=None):
+    def run(self, dbVectors=None, queryVectors=None, **kwargs):
         if dbVectors is not None:
             self.dbVectors = dbVectors
         if queryVectors is not None:
             self.queryVectors = queryVectors
-        scaled_dbVectors = self.scale_db.mean_center_normalize(self.dbVectors)
-        scaled_queryVectors = self.scale_query.mean_center_normalize(self.queryVectors) 
-        debug_print([scaled_dbVectors, scaled_queryVectors], ['scaled_dbVectors', 'scaled_queryVectors'])
-        return cdist(scaled_queryVectors, scaled_dbVectors, 'cosine')
+        self.scaled_dbVectors = self.scale_db.mean_center_normalize(self.dbVectors)
+        self.scaled_queryVectors = self.scale_query.mean_center_normalize(self.queryVectors) 
+        debug_print([self.scaled_dbVectors, self.scaled_queryVectors], ['scaled_dbVectors', 'scaled_queryVectors'])
+        return np.dot(self.scaled_queryVectors, self.scaled_dbVectors.T)
+        # return -cdist(scaled_queryVectors, scaled_dbVectors, 'cosine').T
     
 class CPUDotProductPositive(DotProduct):
 
     def __init__(self, dbVectors, queryVectors, positive_value: float):
         super().__init__(dbVectors, queryVectors)
         self.positive_value = positive_value
+        self.transform_dbVectors = None
+        self.transform_queryVectors = None
 
-    def run(self, dbVectors=None, queryVectors=None):
+    def pre_run(self, dbVectors=None, queryVectors=None):
         if dbVectors is not None:
             self.dbVectors = dbVectors
         if queryVectors is not None:
             self.queryVectors = queryVectors
-        transform_dbVectors    = self.scale_db.augment_positive(self.positive_value, self.dbVectors)
-        transform_queryVectors = self.scale_query.augment_positive(self.positive_value, self.queryVectors)
-        debug_print([transform_dbVectors, transform_queryVectors], ['transform_dbVectors', 'transform_queryVectors'])
-        return -cdist(transform_queryVectors, transform_dbVectors, 'cosine').T
+        self.transform_dbVectors    = self.scale_db.augment_positive(self.positive_value, self.dbVectors)
+        self.transform_queryVectors = self.scale_query.augment_positive(self.positive_value, self.queryVectors)
+        debug_print([self.transform_dbVectors, self.transform_queryVectors], ['transform_dbVectors', 'transform_queryVectors'])
+
+    def run(self):
+        return -cdist(self.transform_queryVectors, self.transform_dbVectors, 'cosine').T
     
 class CPUDotProductPositiveForLoop(DotProduct):
 
@@ -250,16 +262,23 @@ class CPUDotProductPositiveForLoop(DotProduct):
         debug_print([self.transform_dbVectors, self.transform_queryVectors], ['transform_dbVectors', 'transform_queryVectors'])
 
     def run(self, dbVectors=None, queryVectors=None):
+        # Use numpy's matrix multiplication for better performance
+        # return np.dot(self.queryVectors, self.dbVectors.T).T
+        results = np.zeros((len(self.dbVectors), len(self.queryVectors)))
         
-        for j in range(len(self.transform_dbVectors)):
-            qVector  = self.transform_queryVectors[0]
-            dbVector = self.transform_dbVectors[j]
-            # dotProduct = np.dot(self.transform_queryVectors[0], dbVector)
-            dot_prod = 0
-            for k in range(len(dbVector)):
-                dot_prod += qVector[k] * dbVector[k]
-    
-    
+        # Iterate through each database vector
+        for i in range(len(self.dbVectors)):
+            # Iterate through each query vector
+            for j in range(len(self.queryVectors)):
+                dot_product = 0
+                # Calculate dot product element by element
+                # for k in range(len(self.dbVectors[i])):
+                #     dot_product += self.dbVectors[i][k] * self.queryVectors[j][k]
+                results[i][j] = self.dbVectors[i] @ self.queryVectors[j]
+                
+        return results
+
+
 class CPUDotProductPositiveMIN(DotProduct):
 
     def __init__(self, dbVectors, queryVectors):
@@ -345,7 +364,7 @@ class LoihiDotProductSimulationPositiveDBScale(LoihiDotProduct):
         self.network = TwoLayerSNN()
         self.positive_value = positive_value
 
-    def run(self, dbVectors=None, queryVectors=None, monitor=False):
+    def run(self, dbVectors=None, queryVectors=None, monitor=False, customTimesteps = None):
         if dbVectors is not None:
             self.dbVectors = dbVectors
             self.network = TwoLayerSNN()
@@ -354,10 +373,97 @@ class LoihiDotProductSimulationPositiveDBScale(LoihiDotProduct):
             self.queryVectors = queryVectors
             self.network = TwoLayerSNN()
 
+        simTimesteps = self.timesteps
+        if customTimesteps:
+            simTimesteps = customTimesteps 
+
         results = []
 
         transform_dbVectors = self.scale_db.augment_positive_based_on_q0(self.positive_value, self.dbScale, self.dbVectors)
         transform_queryVectors = self.scale_query.augment_positive_based_on_q0(self.positive_value, self.timesteps, self.queryVectors)
+        debug_print([transform_dbVectors, transform_queryVectors], ['transform_dbVectors', 'transform_queryVectors'])
+        queryVector = transform_queryVectors[41]
+        # debug_print([queryVector[:10]], ['queryVector[:10]'])
+        # debug_print([transform_dbVectors[0][:10]], ['transform_dbVectors[0][:10]'])
+        lif_1, dense, lif_2 = self.network.create_network(self.timesteps, queryVector, transform_dbVectors)
+
+        if monitor:
+            mon_lif_1_v = Monitor()
+            mon_lif_2_u = Monitor()
+            mon_lif_2_v = Monitor()
+            mon_spike_1 = Monitor()
+            mon_spike_2 = Monitor()
+
+            mon_lif_1_v.probe(lif_1.v,   self.timesteps)
+            mon_lif_2_u.probe(lif_2.u,   self.timesteps)
+            mon_lif_2_v.probe(lif_2.v,   self.timesteps)
+            mon_spike_1.probe(lif_1.s_out, self.timesteps)
+            mon_spike_2.probe(lif_2.s_out, self.timesteps)
+
+            mon_lif_1_v_process = list(mon_lif_1_v.get_data())[0]
+            mon_lif_2_u_process = list(mon_lif_2_u.get_data())[0]
+            mon_lif_2_v_process = list(mon_lif_2_v.get_data())[0]
+            mon_spike_1_process = list(mon_spike_1.get_data())[0]
+            mon_spike_2_process = list(mon_spike_2.get_data())[0]
+        
+        lif_2.run(condition=RunSteps(num_steps=simTimesteps), run_cfg=self.run_config)
+
+        if monitor:
+            monitors = {
+                'lif1_voltage': mon_lif_1_v.get_data()[mon_lif_1_v_process]["v"],
+                'lif2_current': mon_lif_2_u.get_data()[mon_lif_2_u_process]["u"],
+                'lif2_voltage': mon_lif_2_v.get_data()[mon_lif_2_v_process]["v"],
+                'lif1_spikes': mon_spike_1.get_data()[mon_spike_1_process]["s_out"],
+                'lif2_spikes': mon_spike_2.get_data()[mon_spike_2_process]["s_out"]
+            }
+
+            return transform_queryVectors, transform_dbVectors, monitors
+
+        for i, queryVector in enumerate(tqdm(transform_queryVectors)):
+            
+            init_v = [ -(self.timesteps  - elem - 1) for elem in queryVector]
+            # debug_print([init_v], ['init_v'])
+            # print(init_v[:5])
+            self.network.update_network(queryVector)
+            # print(lif_1.v.get()[:5])
+
+            lif_2.run(condition=RunSteps(num_steps=simTimesteps), run_cfg=self.run_config)
+            
+            aproxDotProduct = lif_2.u.get()
+
+            # print(lif_2.u.get()[:10])
+
+            # cosine_dist = 1 - aproxDotProduct
+        
+            results.append(aproxDotProduct)
+        
+        lif_2.stop()
+        
+        return np.array(results).T#, transform_queryVectors, transform_dbVectors
+
+class LoihiExactDotProduct():
+
+    def __init__(self, dbVectors, queryVectors, positive_value: float, timesteps=50, dbScale=50, INF=infinity, func=np.floor):
+        self.dbVectors = dbVectors
+        self.queryVectors = queryVectors
+        # self.run_config = Loihi1SimCfg(select_tag='fixed_pt')
+        self.run_config = Loihi1SimCfg(select_tag='floating_pt')
+        self.timesteps = timesteps
+        self.dbScale = dbScale
+        self.INF = infinity
+        self.network = TwoLayerSNN(func=func)
+        self.positive_value = positive_value
+
+    def run(self, dbVectors=None, queryVectors=None, monitor=False, customTimesteps = None):
+
+        simTimesteps = self.timesteps
+        if customTimesteps:
+            simTimesteps = customTimesteps 
+
+        results = []
+
+        transform_dbVectors = self.dbVectors
+        transform_queryVectors = self.queryVectors
         debug_print([transform_dbVectors, transform_queryVectors], ['transform_dbVectors', 'transform_queryVectors'])
         queryVector = transform_queryVectors[0]
         # debug_print([queryVector[:10]], ['queryVector[:10]'])
@@ -383,9 +489,10 @@ class LoihiDotProductSimulationPositiveDBScale(LoihiDotProduct):
             mon_spike_1_process = list(mon_spike_1.get_data())[0]
             mon_spike_2_process = list(mon_spike_2.get_data())[0]
         
-        lif_2.run(condition=RunSteps(num_steps=self.timesteps), run_cfg=self.run_config)
+        lif_2.run(condition=RunSteps(num_steps=simTimesteps), run_cfg=self.run_config)
 
         if monitor:
+            print(f"lif_2.u.get(): {lif_2.u.get()}")
             monitors = {
                 'lif1_voltage': mon_lif_1_v.get_data()[mon_lif_1_v_process]["v"],
                 'lif2_current': mon_lif_2_u.get_data()[mon_lif_2_u_process]["u"],
@@ -398,15 +505,16 @@ class LoihiDotProductSimulationPositiveDBScale(LoihiDotProduct):
 
         for i, queryVector in enumerate(tqdm(transform_queryVectors)):
             
-            init_v = [ -(self.timesteps  - elem - 1) for elem in queryVector]
+            init_v = [ -(self.timesteps  - elem ) for elem in queryVector]
             # debug_print([init_v], ['init_v'])
             # print(init_v[:5])
             self.network.update_network(queryVector)
             # print(lif_1.v.get()[:5])
 
-            lif_2.run(condition=RunSteps(num_steps=self.timesteps), run_cfg=self.run_config)
+            lif_2.run(condition=RunSteps(num_steps=simTimesteps), run_cfg=self.run_config)
             
             aproxDotProduct = lif_2.u.get()
+            # print(f"lif_2.u.get(): {lif_2.u.get()}")
 
             # print(lif_2.u.get()[:10])
 
@@ -417,7 +525,8 @@ class LoihiDotProductSimulationPositiveDBScale(LoihiDotProduct):
         lif_2.stop()
         
         return np.array(results).T#, transform_queryVectors, transform_dbVectors
- 
+
+    
 class LoihiDotProductSimulationPositive3Layer(LoihiDotProduct):
 
     def __init__(self, dbVectors, queryVectors, positive_value: float, timesteps=50, INF=infinity):

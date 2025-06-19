@@ -91,8 +91,54 @@ class SNN:
 
     def update_network(self, queryVector):
         pass
+ 
 
 class TwoLayerSNN(SNN):
+
+    lif_1 = None
+    dense = None
+    lif_2 = None
+
+    def __init__(self, func=np.round):
+        super().__init__()
+        self.func = func
+
+    def create_network(self, timesteps, scaled_queryVector, scaled_dbVectors):
+
+        if scaled_queryVector.shape[0] != scaled_dbVectors.shape[1]:
+            assert("Dims do not match!")
+
+        ## Initialize parameters in the Network
+        self.timesteps = timesteps
+        self.n_vec = scaled_dbVectors.shape[0]
+        self.dims  = scaled_dbVectors.shape[1]
+
+        
+        ## Initialize LIF neuron parameters
+        init_v = np.array([ -(self.timesteps - elem ) for elem in scaled_queryVector])
+        weights = np.array(scaled_dbVectors).reshape(self.n_vec,self.dims).astype(float)
+
+        ## Initialize LIF neurons
+        TwoLayerSNN.lif_1   = LIF(shape=(self.dims,), bias_mant=1, vth=0, v=self.func(init_v).astype(int))
+        TwoLayerSNN.dense   = Dense(weights=self.func(weights).astype(int))
+        TwoLayerSNN.lif_2   = LIF(shape=(self.n_vec,), vth=infinity, bias_mant=0, du=0)
+
+        ## Connect LIF neurons
+        TwoLayerSNN.lif_1.s_out.connect(TwoLayerSNN.dense.s_in)
+        TwoLayerSNN.dense.a_out.connect(TwoLayerSNN.lif_2.a_in)
+
+        return TwoLayerSNN.lif_1, TwoLayerSNN.dense, TwoLayerSNN.lif_2
+        
+    def update_network(self, scaled_queryVector):
+
+        init_v = np.array([ -(self.timesteps  - elem) for elem in scaled_queryVector])
+        TwoLayerSNN.lif_1.u.set(np.zeros(self.dims).astype(int))
+        TwoLayerSNN.lif_1.v.set(self.func(init_v).astype(int))
+
+        TwoLayerSNN.lif_2.u.set(np.zeros(self.n_vec).astype(int))
+        TwoLayerSNN.lif_2.v.set(np.zeros(self.n_vec).astype(int))
+
+class TwoLayerSNNwithAddition(SNN):
 
     lif_1 = None
     dense = None
@@ -105,6 +151,10 @@ class TwoLayerSNN(SNN):
 
         if scaled_queryVector.shape[0] != scaled_dbVectors.shape[1]:
             assert("Dims do not match!")
+
+        # Add a vector of ones at the end of scaled_dbVectors
+        ones_vector = np.ones((1, scaled_dbVectors.shape[1]))
+        scaled_dbVectors = np.vstack((scaled_dbVectors, ones_vector))
 
         ## Initialize parameters in the Network
         self.timesteps = timesteps
@@ -135,6 +185,7 @@ class TwoLayerSNN(SNN):
 
         TwoLayerSNN.lif_2.u.set(np.zeros(self.n_vec).astype(int))
         TwoLayerSNN.lif_2.v.set(np.zeros(self.n_vec).astype(int))
+
 
 class ThreeLayerSNN(SNN):
 

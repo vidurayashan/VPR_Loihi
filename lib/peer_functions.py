@@ -230,8 +230,99 @@ def circular_convolution(x, y):
     return z
 
 
+def createPRNew(S_in, GThard, GTsoft=None, matching='multi', n_thresh=100):
+    """
+    Calculates the precision and recall at n_thresh equally spaced threshold values
+    for a given similarity matrix S_in and ground truth matrices GThard and GTsoft for
+    single-best-match VPR or multi-match VPR.
+
+    The matrices S_in, GThard and GTsoft are two-dimensional and should all have the
+    same shape.
+    The matrices GThard and GTsoft should be binary matrices, where the entries are
+    only zeros or ones.
+    The matrix S_in should have continuous values between -Inf and Inf. Higher values
+    indicate higher similarity.
+    The string matching should be set to either "single" or "multi" for single-best-
+    match VPR or multi-match VPR.
+    The integer n_tresh controls the number of threshold values and should be >1.
+    """
+
+    # print(f'S_in.shape= {S_in.shape}\nGThard.shape= {GThard.shape}\nGTsoft.shape= {GTsoft.shape}')
+
+    # Convert sparse matrices to dense arrays if needed
+    if hasattr(GThard, 'toarray'):
+        GThard = GThard.toarray()
+    if hasattr(GTsoft, 'toarray'):
+        GTsoft = GTsoft.toarray()
+
+    assert (S_in.shape == GThard.shape),"S_in and GThard must have the same shape"
+    if GTsoft is not None:
+        assert (S_in.shape == GTsoft.shape),"S_in and GTsoft must have the same shape"
+    assert (S_in.ndim == 2),"S_in, GThard and GTsoft must be two-dimensional"
+    assert (matching in ['single', 'multi']),"matching should contain one of the following strings: [single, multi]"
+    assert (n_thresh > 1),"n_thresh must be >1"
+
+    if GTsoft is not None and matching == 'single':
+        raise ValueError(
+            "GTSoft with single matching is not supported. "
+            "Please use dilated hard ground truth directly. "
+            "For more details, visit: https://github.com/stschubert/VPR_Tutorial"
+        )
+
+    # ensure logical datatype in GT and GTsoft
+    GT = GThard.astype('bool')
+    if GTsoft is not None:
+        GTsoft = GTsoft.astype('bool')
+
+    # copy S and set elements that are only true in GTsoft to min(S) to ignore them during evaluation
+    S = S_in.copy()
+    if GTsoft is not None:
+        S[GTsoft & ~GT] = S.min()
+
+    # single-best-match or multi-match VPR
+    if matching == 'single':
+        # count the number of ground-truth positives (GTP)
+        GTP = np.count_nonzero(GT.any(0))
+
+        # GT-values for best match per query (i.e., per column)
+        GT = GT[np.argmax(S, axis=0), np.arange(GT.shape[1])]
+
+        # similarities for best match per query (i.e., per column)
+        S = np.max(S, axis=0)
+
+    elif matching == 'multi':
+        # count the number of ground-truth positives (GTP)
+        GTP = np.count_nonzero(GT) # ground truth positives
+
+    # init precision and recall vectors
+    R = [0, ]
+    P = [1, ]
+
+    # select start and end treshold
+    startV = S.max()  # start-value for treshold
+    endV = S.min()  # end-value for treshold
+
+    # iterate over different thresholds
+    for i in np.linspace(startV, endV, n_thresh):
+        B = S >= i  # apply threshold
+
+        TP = np.count_nonzero(GT & B)  # true positives
+        FP = np.count_nonzero((~GT) & B)  # false positives
+
+        P.append(TP / (TP + FP))  # precision
+        R.append(TP / GTP)  # recall
+
+    return R, P
+
 def createPR(S, GThard, GTsoft):
+
+    # Convert sparse matrices to dense arrays if needed
+    if hasattr(GThard, 'toarray'):
+        GThard = GThard.toarray()
+    if hasattr(GTsoft, 'toarray'):
+        GTsoft = GTsoft.toarray()
     
+    # print(GThard.shape, GThard.shape)
     #% remove soft-but-not-hard-entries
     S[np.where(GTsoft &  ~GThard)] = np.min(S[:]);
 

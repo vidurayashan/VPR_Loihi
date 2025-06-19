@@ -1,0 +1,59 @@
+DB size: 200
+begin timestamp : 1740593408.674227; tag : pre_run; duration : 0.02450704574584961; package_0 : 332335.0; core_0 : 234374.0; uncore_0 : 12635.0
+begin timestamp : 1740593408.6990001; tag : postrun; duration : 0.23530888557434082; package_0 : 3117912.0; core_0 : 2247553.0; uncore_0 : 141784.0
+begin timestamp : 1740593408.9347281; tag : pre_run; duration : 0.0197293758392334; package_0 : 237731.0; core_0 : 160827.0; uncore_0 : 9765.0
+begin timestamp : 1740593408.9548295; tag : postrun; duration : 0.1907339096069336; package_0 : 2313166.0; core_0 : 1649715.0; uncore_0 : 124634.0
+begin timestamp : 1740593409.1461632; tag : pre_run; duration : 0.019100427627563477; package_0 : 217406.0; core_0 : 142090.0; uncore_0 : 11169.0
+begin timestamp : 1740593409.1654887; tag : postrun; duration : 0.18739008903503418; package_0 : 2317499.0; core_0 : 1668575.0; uncore_0 : 119751.0
+begin timestamp : 1740593409.3538017; tag : pre_run; duration : 0.019722700119018555; package_0 : 240417.0; core_0 : 148559.0; uncore_0 : 10742.0
+begin timestamp : 1740593409.3740063; tag : postrun; duration : 0.2431802749633789; package_0 : 2707696.0; core_0 : 1845271.0; uncore_0 : 132629.0
+begin timestamp : 1740593409.6175146; tag : pre_run; duration : 0.021604299545288086; package_0 : 220702.0; core_0 : 140564.0; uncore_0 : 8423.0
+begin timestamp : 1740593409.6393676; tag : postrun; duration : 0.19054365158081055; package_0 : 2288203.0; core_0 : 1609127.0; uncore_0 : 116577.0
+
+DB size: 300
+begin timestamp : 1740590165.119739; tag : pre_run; duration : 0.03083038330078125; package_0 : 611204.0; core_0 : 499877.0; uncore_0 : 0.0
+begin timestamp : 1740590165.1509175; tag : postrun; duration : 0.31103515625; package_0 : 4689991.0; core_0 : 3545950.0; uncore_0 : 199584.0
+begin timestamp : 1740590165.462505; tag : pre_run; duration : 0.022408008575439453; package_0 : 308959.0; core_0 : 219116.0; uncore_0 : 10925.0
+begin timestamp : 1740590165.4854062; tag : postrun; duration : 0.2595040798187256; package_0 : 3694753.0; core_0 : 2782280.0; uncore_0 : 179016.0
+begin timestamp : 1740590165.7454114; tag : pre_run; duration : 0.021226882934570312; package_0 : 287964.0; core_0 : 202270.0; uncore_0 : 10803.0
+begin timestamp : 1740590165.7670603; tag : postrun; duration : 0.25556254386901855; package_0 : 3677480.0; core_0 : 2800713.0; uncore_0 : 160583.0
+begin timestamp : 1740590166.0229378; tag : pre_run; duration : 0.022595643997192383; package_0 : 279906.0; core_0 : 201476.0; uncore_0 : 11047.0
+begin timestamp : 1740590166.0460472; tag : postrun; duration : 0.2523040771484375; package_0 : 3576163.0; core_0 : 2716790.0; uncore_0 : 161804.0
+begin timestamp : 1740590166.2987578; tag : pre_run; duration : 0.020671844482421875; package_0 : 286437.0; core_0 : 206909.0; uncore_0 : 8728.0
+begin timestamp : 1740590166.3197513; tag : postrun; duration : 0.25851964950561523; package_0 : 3706167.0; core_0 : 2815911.0; uncore_0 : 170288.0
+
+DB size: 350
+begin timestamp : 1740590188.6433396; tag : pre_run; duration : 0.031095266342163086; package_0 : 523497.0; core_0 : 388732.0; uncore_0 : 22461.0
+begin timestamp : 1740590188.6746798; tag : postrun; duration : 0.32756733894348145; package_0 : 4815295.0; core_0 : 3622183.0; uncore_0 : 218322.0
+begin timestamp : 1740590189.00274; tag : pre_run; duration : 0.025464534759521484; package_0 : 349547.0; core_0 : 243163.0; uncore_0 : 14588.0
+begin timestamp : 1740590189.0286748; tag : postrun; duration : 0.30674171447753906; package_0 : 4410390.0; core_0 : 3342521.0; uncore_0 : 194030.0
+begin timestamp : 1740590189.3361254; tag : pre_run; duration : 0.023657798767089844; package_0 : 317809.0; core_0 : 210570.0; uncore_0 : 11352.0
+begin timestamp : 1740590189.3602853; tag : postrun; duration : 0.3044712543487549; package_0 : 4353199.0; core_0 : 3281364.0; uncore_0 : 204407.0
+begin timestamp : 1740590189.665202; tag : pre_run; duration : 0.022398710250854492; package_0 : 291626.0; core_0 : 207580.0; uncore_0 : 8239.0
+begin timestamp : 1740590189.6880314; tag : postrun; duration : 0.3050856590270996; package_0 : 4339649.0; core_0 : 3294547.0; uncore_0 : 176330.0
+begin timestamp : 1740590189.993587; tag : pre_run; duration : 0.024862289428710938; package_0 : 316283.0; core_0 : 218261.0; uncore_0 : 11841.0
+begin timestamp : 1740590190.018743; tag : postrun; duration : 0.2865712642669678; package_0 : 4262074.0; core_0 : 3280570.0; uncore_0 : 178650.0
+
+DB size: 400
+begin timestamp : 1740590205.7419221; tag : pre_run; duration : 0.0390925407409668; package_0 : 644652.0; core_0 : 476439.0; uncore_0 : 27465.0
+begin timestamp : 1740590205.781457; tag : postrun; duration : 0.3651463985443115; package_0 : 5414048.0; core_0 : 4121450.0; uncore_0 : 221496.0
+begin timestamp : 1740590206.1469314; tag : pre_run; duration : 0.026485919952392578; package_0 : 360595.0; core_0 : 252624.0; uncore_0 : 13428.0
+begin timestamp : 1740590206.1738498; tag : postrun; duration : 0.34421372413635254; package_0 : 5034960.0; core_0 : 3782339.0; uncore_0 : 235046.0
+begin timestamp : 1740590206.5185103; tag : pre_run; duration : 0.028033733367919922; package_0 : 378417.0; core_0 : 265746.0; uncore_0 : 13977.0
+begin timestamp : 1740590206.5467746; tag : postrun; duration : 0.32850146293640137; package_0 : 4851672.0; core_0 : 3682364.0; uncore_0 : 213622.0
+begin timestamp : 1740590206.8763552; tag : pre_run; duration : 0.02726435661315918; package_0 : 379882.0; core_0 : 246216.0; uncore_0 : 18372.0
+begin timestamp : 1740590206.9041455; tag : postrun; duration : 0.3375272750854492; package_0 : 4916675.0; core_0 : 3738882.0; uncore_0 : 201049.0
+begin timestamp : 1740590207.242066; tag : pre_run; duration : 0.02676868438720703; package_0 : 348693.0; core_0 : 241455.0; uncore_0 : 20020.0
+begin timestamp : 1740590207.2691634; tag : postrun; duration : 0.3317897319793701; package_0 : 4832935.0; core_0 : 3678762.0; uncore_0 : 203551.0
+
+DB size: 450
+begin timestamp : 1740590227.79675; tag : pre_run; duration : 0.04078197479248047; package_0 : 630004.0; core_0 : 451476.0; uncore_0 : 30029.0
+begin timestamp : 1740590227.8378718; tag : postrun; duration : 0.41628551483154297; package_0 : 6166244.0; core_0 : 4614490.0; uncore_0 : 316528.0
+begin timestamp : 1740590228.2544165; tag : pre_run; duration : 0.029273271560668945; package_0 : 392883.0; core_0 : 260619.0; uncore_0 : 27038.0
+begin timestamp : 1740590228.2839193; tag : postrun; duration : 0.3710446357727051; package_0 : 5527634.0; core_0 : 4150258.0; uncore_0 : 297485.0
+begin timestamp : 1740590228.655218; tag : pre_run; duration : 0.02937483787536621; package_0 : 397521.0; core_0 : 275939.0; uncore_0 : 21484.0
+begin timestamp : 1740590228.6848366; tag : postrun; duration : 0.3752937316894531; package_0 : 5565782.0; core_0 : 4235402.0; uncore_0 : 265380.0
+begin timestamp : 1740590229.0607698; tag : pre_run; duration : 0.028457164764404297; package_0 : 379271.0; core_0 : 256835.0; uncore_0 : 18921.0
+begin timestamp : 1740590229.0894387; tag : postrun; duration : 0.37839245796203613; package_0 : 5609117.0; core_0 : 4278309.0; uncore_0 : 261535.0
+begin timestamp : 1740590229.4681392; tag : pre_run; duration : 0.03039264678955078; package_0 : 391295.0; core_0 : 265197.0; uncore_0 : 17761.0
+begin timestamp : 1740590229.4987855; tag : postrun; duration : 0.3720560073852539; package_0 : 5514573.0; core_0 : 4213063.0; uncore_0 : 249572.0

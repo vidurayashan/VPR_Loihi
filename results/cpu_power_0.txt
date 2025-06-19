@@ -1,0 +1,73 @@
+========== Evaluating GardensPointWalking ============
+begin timestamp : 1742439106.9737093; tag : run_dummy; duration : 0.0046918392181396484; package_0 : 64575.0; core_0 : 53040.0; uncore_0 : 305.0
+begin timestamp : 1742439106.9785213; tag : run; duration : 0.5002880096435547; package_0 : 9816442.0; core_0 : 7928568.0; uncore_0 : 309997.0
+Similarity computation time: 2.50 ms
+GardensPointWalking - day_left - night_right : 0.3483199833406223 - 2.50 ms - db_size : 200
+begin timestamp : 1742439107.548445; tag : run_dummy; duration : 0.004904747009277344; package_0 : 110047.0; core_0 : 90088.0; uncore_0 : 3845.0
+begin timestamp : 1742439107.553466; tag : run; duration : 0.3008992671966553; package_0 : 5981918.0; core_0 : 4849597.0; uncore_0 : 195923.0
+Similarity computation time: 1.51 ms
+GardensPointWalking - day_right - night_right : 0.6828675979541299 - 1.51 ms - db_size : 200
+begin timestamp : 1742439107.9326; tag : run_dummy; duration : 0.005332231521606445; package_0 : 126892.0; core_0 : 105773.0; uncore_0 : 3663.0
+begin timestamp : 1742439107.9381604; tag : run; duration : 0.22164011001586914; package_0 : 4805591.0; core_0 : 3883169.0; uncore_0 : 184508.0
+Similarity computation time: 1.11 ms
+GardensPointWalking - day_right - day_left : 0.766212373740079 - 1.11 ms - db_size : 200
+========== Evaluating CMU ============
+begin timestamp : 1742439108.623203; tag : run_dummy; duration : 0.004802703857421875; package_0 : 80566.0; core_0 : 66162.0; uncore_0 : 0.0
+begin timestamp : 1742439108.6281905; tag : run; duration : 62.99467206001282; package_0 : 1063029200.0; core_0 : 814355581.0; uncore_0 : 36529448.0
+Similarity computation time: 43.09 ms
+CMU - 20110421 - 20100901 : 0.5329386692450612 - 43.09 ms - db_size : 1155
+begin timestamp : 1742439172.4907925; tag : run_dummy; duration : 0.0048770904541015625; package_0 : 89111.0; core_0 : 72205.0; uncore_0 : 0.0
+begin timestamp : 1742439172.4959142; tag : run; duration : 52.99962854385376; package_0 : 918463591.0; core_0 : 687766061.0; uncore_0 : 31866495.0
+Similarity computation time: 44.73 ms
+CMU - 20110421 - 20100915 : 0.5564904835088946 - 44.73 ms - db_size : 1155
+begin timestamp : 1742439226.267483; tag : run_dummy; duration : 0.004998207092285156; package_0 : 91125.0; core_0 : 70984.0; uncore_0 : 2929.0
+begin timestamp : 1742439226.2729213; tag : run; duration : 51.24609684944153; package_0 : 792745163.0; core_0 : 576566945.0; uncore_0 : 30700727.0
+Similarity computation time: 46.21 ms
+CMU - 20110421 - 20101221 : 0.5817727341148954 - 46.21 ms - db_size : 1155
+begin timestamp : 1742439278.188837; tag : run_dummy; duration : 0.004820585250854492; package_0 : 69336.0; core_0 : 56762.0; uncore_0 : 0.0
+begin timestamp : 1742439278.1940641; tag : run; duration : 29.96739411354065; package_0 : 523785646.0; core_0 : 401712595.0; uncore_0 : 17203752.0
+Similarity computation time: 41.74 ms
+CMU - 20110421 - 20110202 : 0.479021682146223 - 41.74 ms - db_size : 1155
+========== Evaluating SFUMountain ============
+begin timestamp : 1742439308.4389613; tag : run_dummy; duration : 0.00467681884765625; package_0 : 79162.0; core_0 : 67444.0; uncore_0 : 0.0
+begin timestamp : 1742439308.4437954; tag : run; duration : 1.7823855876922607; package_0 : 24477660.0; core_0 : 17000628.0; uncore_0 : 1020444.0
+Similarity computation time: 4.63 ms
+SFUMountain - dry - dusk : 0.5872419484129473 - 4.63 ms - db_size : 385
+begin timestamp : 1742439310.3612823; tag : run_dummy; duration : 0.004759073257446289; package_0 : 107605.0; core_0 : 85144.0; uncore_0 : 5066.0
+begin timestamp : 1742439310.3662686; tag : run; duration : 1.3273744583129883; package_0 : 27798024.0; core_0 : 22091679.0; uncore_0 : 819700.0
+Similarity computation time: 3.45 ms
+SFUMountain - dry - jan : 0.4686050355891277 - 3.45 ms - db_size : 385
+begin timestamp : 1742439311.8286455; tag : run_dummy; duration : 0.004583835601806641; package_0 : 160888.0; core_0 : 140686.0; uncore_0 : 3113.0
+begin timestamp : 1742439311.8335524; tag : run; duration : 1.3609633445739746; package_0 : 23729310.0; core_0 : 17891677.0; uncore_0 : 828672.0
+Similarity computation time: 3.54 ms
+SFUMountain - dry - wet : 0.5301685324766576 - 3.54 ms - db_size : 385
+========== Evaluating Nordland1000 ============
+begin timestamp : 1742439313.5493515; tag : run_dummy; duration : 0.004999637603759766; package_0 : 85510.0; core_0 : 68909.0; uncore_0 : 0.0
+begin timestamp : 1742439313.5546458; tag : run; duration : 35.646875619888306; package_0 : 640628670.0; core_0 : 496717295.0; uncore_0 : 21307685.0
+Similarity computation time: 35.65 ms
+Nordland1000 - spring - winter : 0.4729145364123906 - 35.65 ms - db_size : 1000
+begin timestamp : 1742439349.754102; tag : run_dummy; duration : 0.005208492279052734; package_0 : 129943.0; core_0 : 82947.0; uncore_0 : 11352.0
+begin timestamp : 1742439349.7596204; tag : run; duration : 19.275234699249268; package_0 : 375107316.0; core_0 : 295394263.0; uncore_0 : 12134063.0
+Similarity computation time: 19.28 ms
+Nordland1000 - spring - summer : 0.3958831912658727 - 19.28 ms - db_size : 1000
+begin timestamp : 1742439369.5759134; tag : run_dummy; duration : 0.006427764892578125; package_0 : 123229.0; core_0 : 88989.0; uncore_0 : 11536.0
+begin timestamp : 1742439369.582686; tag : run; duration : 6.123981237411499; package_0 : 127224589.0; core_0 : 99667897.0; uncore_0 : 4188587.0
+Similarity computation time: 6.12 ms
+Nordland1000 - summer - winter : 0.17715338731683622 - 6.12 ms - db_size : 1000
+begin timestamp : 1742439376.251346; tag : run_dummy; duration : 0.004890918731689453; package_0 : 73486.0; core_0 : 59875.0; uncore_0 : 0.0
+begin timestamp : 1742439376.2565303; tag : run; duration : 20.59718942642212; package_0 : 403155584.0; core_0 : 318382669.0; uncore_0 : 12865872.0
+Similarity computation time: 20.60 ms
+Nordland1000 - summer - fall : 0.5614676123621529 - 20.60 ms - db_size : 1000
+========== Evaluating StLucia ============
+begin timestamp : 1742439397.5339687; tag : run_dummy; duration : 0.0051727294921875; package_0 : 94055.0; core_0 : 77026.0; uncore_0 : 0.0
+begin timestamp : 1742439397.5393233; tag : run; duration : 49.039600133895874; package_0 : 893957428.0; core_0 : 679232453.0; uncore_0 : 31189129.0
+Similarity computation time: 34.32 ms
+StLucia - 100909_0845 - 180809_1545 : 0.2244936271962395 - 34.32 ms - db_size : 1409
+begin timestamp : 1742439447.6171525; tag : run_dummy; duration : 0.0056056976318359375; package_0 : 100220.0; core_0 : 72022.0; uncore_0 : 9155.0
+begin timestamp : 1742439447.6229835; tag : run; duration : 38.70463967323303; package_0 : 625796920.0; core_0 : 457806629.0; uncore_0 : 24739682.0
+Similarity computation time: 27.16 ms
+StLucia - 100909_1000 - 190809_1410 : 0.3171161873095705 - 27.16 ms - db_size : 1266
+begin timestamp : 1742439487.1730433; tag : run_dummy; duration : 0.005053043365478516; package_0 : 101868.0; core_0 : 71350.0; uncore_0 : 0.0
+begin timestamp : 1742439487.1784363; tag : run; duration : 49.35519599914551; package_0 : 873065636.0; core_0 : 659843525.0; uncore_0 : 31717753.0
+Similarity computation time: 40.96 ms
+StLucia - 100909_1210 - 210809_1210 : 0.4029583067331993 - 40.96 ms - db_size : 1284

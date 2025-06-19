@@ -1,0 +1,73 @@
+========== Evaluating GardensPointWalking ============
+begin timestamp : 1742443190.0762734; tag : multiple_run_dummy; duration : 0.024197816848754883; package_0 : 527709.0; core_0 : 419921.0; uncore_0 : 21301.0
+begin timestamp : 1742443190.1009364; tag : multiple_run; duration : 2.4869487285614014; package_0 : 62893149.0; core_0 : 53145983.0; uncore_0 : 1697689.0
+Similarity computation time: 2.49 ms
+GardensPointWalking - day_left - night_right : 0.3483199833406223 - 2.49 ms - db_size : 200
+begin timestamp : 1742443192.6578653; tag : multiple_run_dummy; duration : 0.02676224708557129; package_0 : 841367.0; core_0 : 728270.0; uncore_0 : 25757.0
+begin timestamp : 1742443192.684981; tag : multiple_run; duration : 1.2838332653045654; package_0 : 28860339.0; core_0 : 23747253.0; uncore_0 : 947568.0
+Similarity computation time: 1.28 ms
+GardensPointWalking - day_right - night_right : 0.6828675979541299 - 1.28 ms - db_size : 200
+begin timestamp : 1742443194.0358539; tag : multiple_run_dummy; duration : 0.022002220153808594; package_0 : 486998.0; core_0 : 411193.0; uncore_0 : 12879.0
+begin timestamp : 1742443194.058149; tag : multiple_run; duration : 1.1654212474822998; package_0 : 24475951.0; core_0 : 19991221.0; uncore_0 : 854673.0
+Similarity computation time: 1.17 ms
+GardensPointWalking - day_right - day_left : 0.766212373740079 - 1.17 ms - db_size : 200
+========== Evaluating CMU ============
+begin timestamp : 1742443195.7335808; tag : multiple_run_dummy; duration : 0.022441387176513672; package_0 : 470824.0; core_0 : 397033.0; uncore_0 : 11657.0
+begin timestamp : 1742443195.7564192; tag : multiple_run; duration : 315.63710165023804; package_0 : 5516074868.0; core_0 : 4213506486.0; uncore_0 : 192879939.0
+Similarity computation time: 43.18 ms
+CMU - 20110421 - 20100901 : 0.5329386692450612 - 43.18 ms - db_size : 1155
+begin timestamp : 1742443512.2637622; tag : multiple_run_dummy; duration : 0.023815393447875977; package_0 : 470519.0; core_0 : 384276.0; uncore_0 : 11719.0
+begin timestamp : 1742443512.2879484; tag : multiple_run; duration : 328.1015672683716; package_0 : 4020384300.0; core_0 : 2695793880.0; uncore_0 : 189800295.0
+Similarity computation time: 55.38 ms
+CMU - 20110421 - 20100915 : 0.5564904835088946 - 55.38 ms - db_size : 1155
+begin timestamp : 1742443841.1551416; tag : multiple_run_dummy; duration : 0.030823707580566406; package_0 : 623900.0; core_0 : 506469.0; uncore_0 : 21667.0
+begin timestamp : 1742443841.186363; tag : multiple_run; duration : 262.52624320983887; package_0 : 3979264410.0; core_0 : 2900510275.0; uncore_0 : 151623269.0
+Similarity computation time: 47.34 ms
+CMU - 20110421 - 20101221 : 0.5817727341148954 - 47.34 ms - db_size : 1155
+begin timestamp : 1742444104.372945; tag : multiple_run_dummy; duration : 0.023232698440551758; package_0 : 464049.0; core_0 : 381652.0; uncore_0 : 15625.0
+begin timestamp : 1742444104.3965344; tag : multiple_run; duration : 150.0830900669098; package_0 : 2650612233.0; core_0 : 2034006451.0; uncore_0 : 91554758.0
+Similarity computation time: 41.81 ms
+CMU - 20110421 - 20110202 : 0.479021682146223 - 41.81 ms - db_size : 1155
+========== Evaluating SFUMountain ============
+begin timestamp : 1742444254.7652242; tag : multiple_run_dummy; duration : 0.023700952529907227; package_0 : 471984.0; core_0 : 379943.0; uncore_0 : 20202.0
+begin timestamp : 1742444254.7892687; tag : multiple_run; duration : 14.235003232955933; package_0 : 208780899.0; core_0 : 149004563.0; uncore_0 : 8600076.0
+Similarity computation time: 7.40 ms
+SFUMountain - dry - dusk : 0.5872419484129473 - 7.40 ms - db_size : 385
+begin timestamp : 1742444269.1589696; tag : multiple_run_dummy; duration : 0.023935794830322266; package_0 : 526488.0; core_0 : 399352.0; uncore_0 : 30639.0
+begin timestamp : 1742444269.1831071; tag : multiple_run; duration : 6.8179755210876465; package_0 : 104504310.0; core_0 : 75343191.0; uncore_0 : 4400013.0
+Similarity computation time: 3.54 ms
+SFUMountain - dry - jan : 0.4686050355891277 - 3.54 ms - db_size : 385
+begin timestamp : 1742444276.1355824; tag : multiple_run_dummy; duration : 0.023302316665649414; package_0 : 463073.0; core_0 : 377074.0; uncore_0 : 16663.0
+begin timestamp : 1742444276.1591268; tag : multiple_run; duration : 6.900888919830322; package_0 : 107061921.0; core_0 : 77340683.0; uncore_0 : 4583728.0
+Similarity computation time: 3.59 ms
+SFUMountain - dry - wet : 0.5301685324766576 - 3.59 ms - db_size : 385
+========== Evaluating Nordland1000 ============
+begin timestamp : 1742444283.417389; tag : multiple_run_dummy; duration : 0.02355813980102539; package_0 : 475341.0; core_0 : 386534.0; uncore_0 : 17334.0
+begin timestamp : 1742444283.4412334; tag : multiple_run; duration : 178.64694452285767; package_0 : 3155338602.0; core_0 : 2441068519.0; uncore_0 : 105032141.0
+Similarity computation time: 35.73 ms
+Nordland1000 - spring - winter : 0.4729145364123906 - 35.73 ms - db_size : 1000
+begin timestamp : 1742444462.6315022; tag : multiple_run_dummy; duration : 0.022846460342407227; package_0 : 505919.0; core_0 : 421996.0; uncore_0 : 15930.0
+begin timestamp : 1742444462.6548035; tag : multiple_run; duration : 92.70829224586487; package_0 : 1765927853.0; core_0 : 1385192255.0; uncore_0 : 59077058.0
+Similarity computation time: 18.54 ms
+Nordland1000 - spring - summer : 0.3958831912658727 - 18.54 ms - db_size : 1000
+begin timestamp : 1742444555.8880131; tag : multiple_run_dummy; duration : 0.025725603103637695; package_0 : 557921.0; core_0 : 452819.0; uncore_0 : 28748.0
+begin timestamp : 1742444555.9141216; tag : multiple_run; duration : 31.012305736541748; package_0 : 575540946.0; core_0 : 437826333.0; uncore_0 : 21439215.0
+Similarity computation time: 6.20 ms
+Nordland1000 - summer - winter : 0.17715338731683622 - 6.20 ms - db_size : 1000
+begin timestamp : 1742444587.4611006; tag : multiple_run_dummy; duration : 0.023364782333374023; package_0 : 537901.0; core_0 : 458068.0; uncore_0 : 8423.0
+begin timestamp : 1742444587.4846866; tag : multiple_run; duration : 101.57363176345825; package_0 : 1867642253.0; core_0 : 1454615356.0; uncore_0 : 63572103.0
+Similarity computation time: 20.31 ms
+Nordland1000 - summer - fall : 0.5614676123621529 - 20.31 ms - db_size : 1000
+========== Evaluating StLucia ============
+begin timestamp : 1742444689.7409687; tag : multiple_run_dummy; duration : 0.026263952255249023; package_0 : 504271.0; core_0 : 413634.0; uncore_0 : 15259.0
+begin timestamp : 1742444689.7675426; tag : multiple_run; duration : 209.9217357635498; package_0 : 3451176956.0; core_0 : 2544608903.0; uncore_0 : 132276639.0
+Similarity computation time: 29.38 ms
+StLucia - 100909_0845 - 180809_1545 : 0.2244936271962395 - 29.38 ms - db_size : 1409
+begin timestamp : 1742444900.7209384; tag : multiple_run_dummy; duration : 0.023635149002075195; package_0 : 482787.0; core_0 : 406493.0; uncore_0 : 6592.0
+begin timestamp : 1742444900.7449715; tag : multiple_run; duration : 209.9435203075409; package_0 : 2798932227.0; core_0 : 1915666239.0; uncore_0 : 127985512.0
+Similarity computation time: 29.47 ms
+StLucia - 100909_1000 - 190809_1410 : 0.3171161873095705 - 29.47 ms - db_size : 1266
+begin timestamp : 1742445111.5387318; tag : multiple_run_dummy; duration : 0.024419784545898438; package_0 : 742857.0; core_0 : 638854.0; uncore_0 : 14709.0
+begin timestamp : 1742445111.5634131; tag : multiple_run; duration : 192.68744349479675; package_0 : 2335383914.0; core_0 : 1535833348.0; uncore_0 : 113565261.0
+Similarity computation time: 31.98 ms
+StLucia - 100909_1210 - 210809_1210 : 0.4029583067331993 - 31.98 ms - db_size : 1284
