@@ -79,9 +79,9 @@ from lava.magma.core.run_conditions import RunSteps
 from lava.proc import io
 
 from type_neuron import INF as infinity
-from snn import TwoLayerSNN, ThreeLayerSNN, TwoLayerSNNwithAddition
+from snn import TwoLayerSNN, ThreeLayerSNN, TwoLayerSNNwithAddition, TwoLayerDelay
 
-debug = False
+debug = True
 def debug_print(args, str_lst=[]):
     global debug
     if debug:
@@ -103,10 +103,11 @@ class ScaleDatabase:
     def mean_center_normalize(self, dbVectors: np.ndarray) -> np.ndarray:
 
         mu1 = np.mean(dbVectors,axis=0)
+        # print(f'mu1: {mu1}')
         dbVectors_centered = np.subtract(dbVectors,mu1)
-
+        # print(f'dbVectors_centered: {dbVectors_centered}')
         dbVectors_norm = self.normalizer.fit_transform(dbVectors_centered)
-
+        # print(f'dbVectors_norm: {dbVectors_norm}')
         return dbVectors_norm
 
     def augment_0(self, dbVectors: np.ndarray) -> np.ndarray:
@@ -129,13 +130,17 @@ class ScaleDatabase:
         return rslt * timesteps
     
     def augment_positive_based_on_q0(self, positive_value: float, timesteps: int, queryVector: np.ndarray) -> np.ndarray:
+        # print(queryVector)
+        # print(self.mean_center_normalize(queryVector))
         mean_center_norm_positive = self.mean_center_normalize(queryVector) + positive_value
         rslt = self.normalizer.fit_transform(mean_center_norm_positive)
         # assert np.all(rslt >= 0), "Result contains negative values"
+        # print(rslt)
         max_q = np.max(rslt)
         min_q = np.min(rslt)
         # return (max_q - rslt) * timesteps / (max_q - min_q)
-        ans = (rslt - min_q) * timesteps / (max_q - min_q)
+        ans = (rslt - min_q) * timesteps / (max_q - min_q + 1e-10)
+        # print(ans)
         assert np.all(ans >= 0), "Result contains negative values"
         return ans
     
@@ -187,7 +192,25 @@ class ScaleQuery:
         max_q0 = np.max(rslt[0])
         min_q0 = np.min(rslt[0])
         debug_print([max_q0, min_q0], ['max_q0', 'min_q0'])
-        ans = (rslt - min_q0) * timesteps / (max_q0 - min_q0)
+        ans = (rslt - min_q0) * timesteps / (max_q0 - min_q0 + 1e-10)
+        # assert np.all(ans >= 0), "Result contains negative values"
+        debug_print([ans], ['ans'])
+        return ans
+    
+    def augment_positive_based_on_inidividual_q(self, positive_value: float, timesteps: int, queryVector: np.ndarray) -> np.ndarray:
+        # int_vec = self.mean_center_normalize(queryVector) + positive_value
+        # return int_vec/np.max(int_vec) * timesteps
+        debug_print([queryVector], ['queryVector'])
+        debug_print([positive_value], ['positive_value'])
+        mean_center_norm_positive = self.mean_center_normalize(queryVector) + positive_value
+        debug_print([mean_center_norm_positive], ['mean_center_norm_positive'])
+        rslt = self.normalizer.fit_transform(mean_center_norm_positive)
+        # assert np.all(rslt >= 0), "Result contains negative values"
+        debug_print([rslt], ['rslt'])
+        max_q = np.max(rslt, axis=1, keepdims=True)
+        min_q = np.min(rslt, axis=1, keepdims=True)
+        debug_print([max_q, min_q], ['max_q', 'min_q'])
+        ans = (rslt - min_q) * timesteps / (max_q - min_q + 1e-10)
         # assert np.all(ans >= 0), "Result contains negative values"
         debug_print([ans], ['ans'])
         return ans
@@ -775,3 +798,92 @@ class LoihiDotProductHardware(LoihiDotProduct):
         
         return np.array(results)
   
+class LoihiDelayKNN(LoihiDotProduct):
+
+    def __init__(self, dbVectors, queryVectors, positive_value: float, timesteps=50, dbScale=50, INF=infinity, du=0):
+        super().__init__(dbVectors, queryVectors)
+        self.run_config = Loihi1SimCfg(select_tag='fixed_pt')
+        # self.run_config = Loihi1SimCfg(select_tag='floating_pt')
+        self.timesteps = timesteps
+        self.dbScale = dbScale
+        self.INF = infinity
+        self.network = TwoLayerDelay()
+        self.positive_value = positive_value
+        self.du = du
+
+    def run(self, dbVectors=None, queryVectors=None, monitor=False, customTimesteps = None):
+        if dbVectors is not None:
+            self.dbVectors = dbVectors
+            self.network = TwoLayerDelay()
+            self.scale_query = ScaleQuery(np.mean(dbVectors,axis=0))
+        if queryVectors is not None:
+            self.queryVectors = queryVectors
+            self.network = TwoLayerDelay()
+
+        simTimesteps = self.timesteps
+        if customTimesteps:
+            simTimesteps = customTimesteps 
+
+        results = []
+
+        transform_dbVectors = self.scale_db.augment_positive_based_on_q0(self.positive_value, self.dbScale, self.dbVectors)
+        transform_queryVectors = self.scale_query.augment_positive_based_on_inidividual_q(self.positive_value, self.timesteps, self.queryVectors)
+        debug_print([transform_dbVectors, transform_queryVectors], ['transform_dbVectors', 'transform_queryVectors'])
+        queryVector = transform_queryVectors[0]
+        # debug_print([queryVector[:10]], ['queryVector[:10]'])
+        # debug_print([transform_dbVectors[0][:10]], ['transform_dbVectors[0][:10]'])
+        lif_1, dense, lif_2 = self.network.create_network(self.timesteps, queryVector, transform_dbVectors, du=self.du)
+
+        if monitor:
+            mon_lif_1_v = Monitor()
+            mon_lif_2_u = Monitor()
+            mon_lif_2_v = Monitor()
+            mon_spike_1 = Monitor()
+            mon_spike_2 = Monitor()
+
+            mon_lif_1_v.probe(lif_1.v,   self.timesteps)
+            mon_lif_2_u.probe(lif_2.u,   self.timesteps)
+            mon_lif_2_v.probe(lif_2.v,   self.timesteps)
+            mon_spike_1.probe(lif_1.s_out, self.timesteps)
+            mon_spike_2.probe(lif_2.s_out, self.timesteps)
+
+            mon_lif_1_v_process = list(mon_lif_1_v.get_data())[0]
+            mon_lif_2_u_process = list(mon_lif_2_u.get_data())[0]
+            mon_lif_2_v_process = list(mon_lif_2_v.get_data())[0]
+            mon_spike_1_process = list(mon_spike_1.get_data())[0]
+            mon_spike_2_process = list(mon_spike_2.get_data())[0]
+        
+        lif_2.run(condition=RunSteps(num_steps=simTimesteps), run_cfg=self.run_config)
+
+        if monitor:
+            monitors = {
+                'lif1_voltage': mon_lif_1_v.get_data()[mon_lif_1_v_process]["v"],
+                'lif2_current': mon_lif_2_u.get_data()[mon_lif_2_u_process]["u"],
+                'lif2_voltage': mon_lif_2_v.get_data()[mon_lif_2_v_process]["v"],
+                'lif1_spikes': mon_spike_1.get_data()[mon_spike_1_process]["s_out"],
+                'lif2_spikes': mon_spike_2.get_data()[mon_spike_2_process]["s_out"]
+            }
+
+            return transform_queryVectors, transform_dbVectors, monitors
+
+        for i, queryVector in enumerate(tqdm(transform_queryVectors)):
+            
+            init_v = [ -(self.timesteps  - elem - 1) for elem in queryVector]
+            # debug_print([init_v], ['init_v'])
+            # print(init_v[:5])
+            self.network.update_network(queryVector)
+            # print(lif_1.v.get()[:5])
+
+            lif_2.run(condition=RunSteps(num_steps=simTimesteps), run_cfg=self.run_config)
+            
+            aproxDotProduct = lif_2.u.get()
+
+            # print(lif_2.u.get()[:10])
+
+            # cosine_dist = 1 - aproxDotProduct
+        
+            results.append(aproxDotProduct)
+        
+        lif_2.stop()
+        
+        return np.array(results).T#, transform_queryVectors, transform_dbVectors

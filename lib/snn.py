@@ -240,6 +240,43 @@ class ThreeLayerSNN(SNN):
         ThreeLayerSNN.lif_3.v.set(np.zeros(self.n_vec).astype(int))
 
 
+class TwoLayerDelay(SNN):
+
+    lif_1 = None
+    dense = None
+    lif_2 = None
+
+    def __init__(self, func=np.round):
+        super().__init__()
+        self.func = func
+
+    def create_network(self, timesteps, scaled_queryVector, scaled_dbVectors, du=0):
+
+        if scaled_queryVector.shape[0] != scaled_dbVectors.shape[1]:
+            assert("Dims do not match!")
+
+        ## Initialize parameters in the Network
+        self.timesteps = timesteps
+        self.n_vec = scaled_dbVectors.shape[0]
+        self.dims  = scaled_dbVectors.shape[1]
+
+        
+        ## Initialize LIF neuron parameters
+        init_v = np.array([ (self.timesteps - elem + 1) for elem in scaled_queryVector])
+        weights = np.array(scaled_dbVectors).reshape(self.n_vec,self.dims).astype(float)
+        loihi_bit_shift = 6
+
+        ## Initialize LIF neurons
+        TwoLayerDelay.lif_1   = LIF(shape=(self.dims,), bias_mant=1, vth=self.timesteps >> loihi_bit_shift , v=self.func(init_v).astype(int))
+        TwoLayerDelay.dense   = Dense(weights=self.func(weights).astype(int))
+        TwoLayerDelay.lif_2   = LIF(shape=(self.n_vec,), vth=infinity, bias_mant=0, du=np.round(du * 4095).astype(int))
+
+        ## Connect LIF neurons
+        TwoLayerDelay.lif_1.s_out.connect(TwoLayerDelay.dense.s_in)
+        TwoLayerDelay.dense.a_out.connect(TwoLayerDelay.lif_2.a_in)
+
+        return TwoLayerDelay.lif_1, TwoLayerDelay.dense, TwoLayerDelay.lif_2
+    
 
 # from lava.networks.gradedvecnetwork import GradedDense
 
